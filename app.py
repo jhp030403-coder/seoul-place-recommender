@@ -954,16 +954,22 @@ st.markdown(
     [data-testid="stHeader"] {
         background: transparent !important;
     }
-    /* 사이드바 재표시(>>) 버튼이 어두운 배경에 묻히지 않도록, 배경 pill을 넣어 확실히 보이게 함 */
+    /* 사이드바 재표시(>>) 버튼 - 꽉 찬 민트색 배경 + 진한 아이콘으로 어떤 배경 위에서도 확실히 보이게 함 */
     [data-testid="collapsedControl"] {
-        color: #2DE1C2 !important;
-        background: rgba(45,225,194,0.16) !important;
-        border: 1px solid rgba(45,225,194,0.45) !important;
+        background: #2DE1C2 !important;
+        border: none !important;
         border-radius: 8px !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
+        opacity: 1 !important;
     }
-    [data-testid="collapsedControl"] svg {
-        fill: #2DE1C2 !important;
-        stroke: #2DE1C2 !important;
+    [data-testid="collapsedControl"] svg,
+    [data-testid="collapsedControl"] * {
+        color: #0B0E24 !important;
+        fill: #0B0E24 !important;
+        stroke: #0B0E24 !important;
+    }
+    [data-testid="collapsedControl"]:hover {
+        background: #58ecd6 !important;
     }
     [data-testid="stSidebar"] {
         background: #0B0E24;
