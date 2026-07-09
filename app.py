@@ -802,7 +802,12 @@ def render_weather_line(weather_suitability: int, lang: str) -> str:
 # =========================================================
 # 8. Streamlit 앱 UI
 # =========================================================
-st.set_page_config(page_title="Seoul, now", page_icon="🏙️", layout="wide")
+st.set_page_config(
+    page_title="Seoul, now",
+    page_icon="🏙️",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 # 지도(iframe)가 뒤늦게 로드되며 브라우저가 그 위치로 스크롤을 당기는 경우가 있어,
 # 이 세션에서 처음 열렸을 때 사용자가 실제로 스크롤하기 전까지는 페이지 최상단을 유지한다.
@@ -948,6 +953,13 @@ st.markdown(
     }
     [data-testid="stHeader"] {
         background: transparent !important;
+    }
+    /* 사이드바 재표시(>>) 버튼이 어두운 배경에 묻히지 않도록 색상만 지정 (구조는 안 건드림) */
+    [data-testid="collapsedControl"] {
+        color: #2DE1C2 !important;
+    }
+    [data-testid="collapsedControl"] svg {
+        fill: #2DE1C2 !important;
     }
     [data-testid="stSidebar"] {
         background: #0B0E24;
@@ -1108,18 +1120,22 @@ st.markdown(
         color: #F4F6FF !important;
     }
     [data-testid="stExpander"] summary,
-    [data-testid="stExpander"] summary *,
     [data-testid="stExpander"] details summary,
     .streamlit-expanderHeader,
-    .streamlit-expanderHeader * {
+    details summary {
+        background-color: rgba(255,255,255,0.05) !important;
+        color: #F4F6FF !important;
+    }
+    [data-testid="stExpander"] summary *,
+    .streamlit-expanderHeader *,
+    details summary * {
         color: #F4F6FF !important;
         fill: #F4F6FF !important;
+        background-color: transparent !important;
     }
-    [data-testid="stExpander"] summary > *,
-    .streamlit-expanderHeader > * {
-        border: none !important;
-        background: transparent !important;
-        box-shadow: none !important;
+    [data-testid="stExpander"] summary:hover,
+    details summary:hover {
+        background-color: rgba(255,255,255,0.09) !important;
     }
     /* Streamlit 기본 화살표 아이콘은 버전에 따라 위치가 어긋나거나 흐릿하게 나와서 그냥 숨긴다. */
     [data-testid="stExpander"] svg,
