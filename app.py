@@ -1,6 +1,6 @@
 from __future__ import annotations  # Python 3.9 미만에서 tuple[str, str] 같은 타입 힌트 문법 허용
 
-import platform
+import os
 import math
 import json
 from datetime import datetime
@@ -10,34 +10,45 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 
-# 그래프에 한글이 깨지지 않도록 폰트를 설정한다.
-# 배포 서버(리눅스)에는 나눔고딕 같은 한글 폰트가 기본 설치되어 있지 않은 경우가 많아,
-# OS 시스템 폰트에 의존하는 대신 폰트를 내장한 koreanize-matplotlib 패키지를 우선 사용한다.
-# (requirements.txt에 포함되어 있으면 로컬/배포 환경 어디서든 동일하게 한글이 표시된다.)
-try:
-    import koreanize_matplotlib  # noqa: F401  (import만으로 한글 폰트가 자동 설정됨)
-except ImportError:
-    import matplotlib.font_manager as fm
+# ---- 그래프 한글 폰트 설정 ----
+# 배포 서버(리눅스)는 matplotlib이 한 번 스캔한 폰트 목록을 캐시해두기 때문에,
+# packages.txt로 폰트를 새로 설치해도 그 캐시가 갱신되지 않아 여전히 한글이
+# 깨지는 경우가 있다. 그래서 폰트 '이름'으로 찾기보다, 실제 폰트 '파일 경로'를
+# 직접 찾아서 fm.fontManager.addfont()로 매 실행마다 강제로 등록한다.
+# (이 방식은 캐시 여부와 무관하게 항상 확실하게 동작한다.)
+_KOREAN_FONT_FILE_CANDIDATES = [
+    "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",       # 리눅스 배포 서버 (packages.txt: fonts-nanum)
+    "/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "C:/Windows/Fonts/malgun.ttf",                            # Windows
+    "C:/Windows/Fonts/malgunbd.ttf",
+    "/System/Library/Fonts/Supplemental/AppleGothic.ttf",     # macOS
+]
 
-    # 그냥 이름만 지정하면, 그 폰트가 실제로 없어도 matplotlib이 조용히 기본 폰트로
-    # 바꿔버려서(에러 없이!) 한글이 빈 네모(□)로 깨지는 원인이 된다.
-    # 그래서 실제 설치된 폰트 목록(ttflist)에 있는지 확인한 뒤에만 사용한다.
-    _os_name = platform.system()
-    if _os_name == "Windows":
-        _korean_font_candidates = ["Malgun Gothic"]
-    elif _os_name == "Darwin":
-        _korean_font_candidates = ["AppleGothic"]
-    else:
-        # packages.txt로 fonts-nanum을 설치해두면 리눅스 배포 서버에도 이 이름이 실제로 잡힌다.
-        _korean_font_candidates = ["NanumGothic", "Noto Sans CJK KR", "Noto Sans KR", "UnDotum"]
+_registered_font_name = None
+for _font_path in _KOREAN_FONT_FILE_CANDIDATES:
+    if os.path.exists(_font_path):
+        try:
+            fm.fontManager.addfont(_font_path)
+            _registered_font_name = fm.FontProperties(fname=_font_path).get_name()
+            break
+        except Exception:
+            continue
 
-    _available_fonts = {f.name for f in fm.fontManager.ttflist}
-    _chosen_font = next((c for c in _korean_font_candidates if c in _available_fonts), None)
-    if _chosen_font:
-        plt.rcParams["font.family"] = _chosen_font
-    # 여기서도 못 찾으면 한글이 깨질 수 있다는 뜻이므로, packages.txt에 fonts-nanum이
-    # 제대로 들어있는지, 배포 후 재부팅(reboot)했는지 확인이 필요하다.
+if _registered_font_name:
+    plt.rcParams["font.family"] = _registered_font_name
+else:
+    # 위 경로들에서 못 찾았을 때의 최후 수단: koreanize-matplotlib 패키지가
+    # 설치되어 있으면 그쪽 로직에 맡긴다 (그래도 안 되면 한글이 깨질 수 있음 —
+    # 이 경우 packages.txt의 fonts-nanum이 실제로 설치됐는지, 앱을 완전히
+    # 재부팅(Reboot app)했는지 확인이 필요하다).
+    try:
+        import koreanize_matplotlib  # noqa: F401
+    except ImportError:
+        pass
+
 plt.rcParams["axes.unicode_minus"] = False
 
 
@@ -936,7 +947,25 @@ st.markdown(
         color: #F4F6FF;
     }
     [data-testid="stHeader"] {
+        background: transparent !important;
+        height: 2.5rem;
+        min-height: 2.5rem;
+    }
+    /* 배포 메뉴(⋮ 점 3개, Deploy 버튼)만 숨기고, 사이드바를 다시 펼치는 버튼은 반드시 살려둔다 */
+    [data-testid="stToolbar"] {
         display: none !important;
+    }
+    [data-testid="collapsedControl"],
+    button[kind="header"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #F4F6FF !important;
+        z-index: 999999 !important;
+    }
+    [data-testid="collapsedControl"] svg {
+        fill: #F4F6FF !important;
+        stroke: #F4F6FF !important;
     }
     [data-testid="stSidebar"] {
         background: #0B0E24;
