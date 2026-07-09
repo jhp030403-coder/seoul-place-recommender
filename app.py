@@ -948,24 +948,6 @@ st.markdown(
     }
     [data-testid="stHeader"] {
         background: transparent !important;
-        height: 2.5rem;
-        min-height: 2.5rem;
-    }
-    /* 배포 메뉴(⋮ 점 3개, Deploy 버튼)만 숨기고, 사이드바를 다시 펼치는 버튼은 반드시 살려둔다 */
-    [data-testid="stToolbar"] {
-        display: none !important;
-    }
-    [data-testid="collapsedControl"],
-    button[kind="header"] {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        color: #F4F6FF !important;
-        z-index: 999999 !important;
-    }
-    [data-testid="collapsedControl"] svg {
-        fill: #F4F6FF !important;
-        stroke: #F4F6FF !important;
     }
     [data-testid="stSidebar"] {
         background: #0B0E24;
