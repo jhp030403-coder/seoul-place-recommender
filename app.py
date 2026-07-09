@@ -18,13 +18,26 @@ import matplotlib.pyplot as plt
 try:
     import koreanize_matplotlib  # noqa: F401  (import만으로 한글 폰트가 자동 설정됨)
 except ImportError:
+    import matplotlib.font_manager as fm
+
+    # 그냥 이름만 지정하면, 그 폰트가 실제로 없어도 matplotlib이 조용히 기본 폰트로
+    # 바꿔버려서(에러 없이!) 한글이 빈 네모(□)로 깨지는 원인이 된다.
+    # 그래서 실제 설치된 폰트 목록(ttflist)에 있는지 확인한 뒤에만 사용한다.
     _os_name = platform.system()
     if _os_name == "Windows":
-        plt.rcParams["font.family"] = "Malgun Gothic"
+        _korean_font_candidates = ["Malgun Gothic"]
     elif _os_name == "Darwin":
-        plt.rcParams["font.family"] = "AppleGothic"
+        _korean_font_candidates = ["AppleGothic"]
     else:
-        plt.rcParams["font.family"] = "NanumGothic"
+        # packages.txt로 fonts-nanum을 설치해두면 리눅스 배포 서버에도 이 이름이 실제로 잡힌다.
+        _korean_font_candidates = ["NanumGothic", "Noto Sans CJK KR", "Noto Sans KR", "UnDotum"]
+
+    _available_fonts = {f.name for f in fm.fontManager.ttflist}
+    _chosen_font = next((c for c in _korean_font_candidates if c in _available_fonts), None)
+    if _chosen_font:
+        plt.rcParams["font.family"] = _chosen_font
+    # 여기서도 못 찾으면 한글이 깨질 수 있다는 뜻이므로, packages.txt에 fonts-nanum이
+    # 제대로 들어있는지, 배포 후 재부팅(reboot)했는지 확인이 필요하다.
 plt.rcParams["axes.unicode_minus"] = False
 
 
@@ -970,10 +983,10 @@ st.markdown(
         100% { box-shadow: 0 0 0 0 rgba(45,225,194,0); }
     }
     .hero-title {
-        font-size: 3.2rem; font-weight: 800; letter-spacing: -0.03em;
-        margin: 0; line-height: 1.05;
+        font-size: 3.2rem !important; font-weight: 800 !important; letter-spacing: -0.03em !important;
+        margin: 0 !important; line-height: 1.05 !important;
         background: linear-gradient(100deg, #FFFFFF 20%, #B9C2FF 55%, #2DE1C2 90%);
-        -webkit-background-clip: text; background-clip: text; color: transparent;
+        -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important;
     }
     .hero-subtitle { font-size: 1.05rem; color: rgba(244,246,255,0.78); margin-top: 12px; }
     .hero-caption { font-size: 0.85rem; color: rgba(244,246,255,0.42); margin-top: 4px; }
@@ -1235,7 +1248,10 @@ skyline_svg = """<svg class="skyline" viewBox="0 0 640 46" xmlns="http://www.w3.
 hero_lines = [
     "<div class='hero'>",
     f"<div class='live-chip'><span class='live-dot'></span>{t['live_badge']}</div>",
-    "<p class='hero-title'>Seoul, now</p>",
+    "<p class='hero-title' style=\"font-size:3.2rem !important; font-weight:800 !important; "
+    "line-height:1.05 !important; margin:0 !important; letter-spacing:-0.03em !important; "
+    "background:linear-gradient(100deg,#FFFFFF 20%,#B9C2FF 55%,#2DE1C2 90%); "
+    "-webkit-background-clip:text; background-clip:text; color:transparent;\">Seoul, now</p>",
     f"<p class='hero-subtitle'>{t['hero_subtitle']}</p>",
 ]
 if t["hero_caption"]:
