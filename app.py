@@ -954,12 +954,16 @@ st.markdown(
     [data-testid="stHeader"] {
         background: transparent !important;
     }
-    /* 사이드바 재표시(>>) 버튼이 어두운 배경에 묻히지 않도록 색상만 지정 (구조는 안 건드림) */
+    /* 사이드바 재표시(>>) 버튼이 어두운 배경에 묻히지 않도록, 배경 pill을 넣어 확실히 보이게 함 */
     [data-testid="collapsedControl"] {
         color: #2DE1C2 !important;
+        background: rgba(45,225,194,0.16) !important;
+        border: 1px solid rgba(45,225,194,0.45) !important;
+        border-radius: 8px !important;
     }
     [data-testid="collapsedControl"] svg {
         fill: #2DE1C2 !important;
+        stroke: #2DE1C2 !important;
     }
     [data-testid="stSidebar"] {
         background: #0B0E24;
